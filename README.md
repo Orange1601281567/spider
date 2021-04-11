@@ -4,7 +4,7 @@
 
 
 ## 涉及内容
-layui springboot shiro mybatis-plus 
+layui springboot spring security mybatis-plus 
 
 ## 访问地址
 请自行查看yaml文件<br>

@@ -7,7 +7,7 @@
 layui springboot spring security mybatis-plus 
 
 ## 访问地址
-请自行查看yaml文件<br>
+localhost:9081/material
   
 ## 功能简介
 这个系统中包括以下功能

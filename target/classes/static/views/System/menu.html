@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:shiro="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>index</title>
+    <link rel="stylesheet" href="../../layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../layuiadmin/style/bootstrap.min.css" media="all">
+    <script src="../../layuiadmin/jquery/jquery-1.11.3.min.js"></script>
+    <script src="../../layuiadmin/jquery/bootstrap.min.js"></script>
+    <script src="../../layuiadmin/layui/layui.js"></script>
+</head>
+<body>
+<div class="xm">
+    <div class="xm-d2">
+        <div class="xm-d2-hang1">
+            <div class="pzright" style="width:100%;display: flex; margin-left: 40px; margin-top: 30px;">
+                <p class="xm-d1-p2">
+                    <button id="add" onclick="addPermission()" class="btn btn-primary "><i class="layui-icon">&#xe608;</i>添加</button>
+                    <button class="btn btn-warning" id="btn-expand">全部展开</button>
+                    <button class="btn btn-info" id="btn-fold">全部折叠</button>
+                    <button class="btn btn-success" id="btn-refresh">刷新表格</button>
+                </p>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="xm-d2-hang2">
+            <table id="permissionTable" class="layui-table" lay-filter="permissionTable"></table>
+        </div>
+    </div>
+
+</div>
+</body>
+<!-- 添加菜單信息 -->
+<div class="form-horizontal" id="addmodel" style="display: none; width: 350px;">
+    <div class="form-group" style="display: none;" >
+      <label for="id" class="col-sm-4 control-label">id</label>
+      <div class="col-sm-6">
+        <input type="text" class="form-control" id="id" name="id"  placeholder="id">
+      </div>
+    </div>
+    <div class="form-group" style="margin-top: 20px;">
+        <label for="title" class="col-sm-4 control-label">资源名称</label>
+        <div class="col-sm-6">
+          <input type="text"  class="form-control" id="title" name="title" placeholder="請輸入资源名称">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="href" class="col-sm-4 control-label">资源路径</label>
+        <div class="col-sm-6">
+          <input type="text" class="form-control" id="href" name="href" placeholder="請輸入资源路径">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="sequence" class="col-sm-4 control-label">排序</label>
+        <div class="col-sm-6">
+          <input type="text" class="form-control" id="sequence" name="sequence" placeholder="請輸入排序">
+        </div>
+    </div>
+    <div class="form-group" style="display: none;">
+        <label for="type" class="col-sm-4 control-label" >類型</label>
+        <div class="col-sm-6">
+          <input type="text" class="form-control" id="type" name="type" placeholder="請輸入類型">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="icon" class="col-sm-4 control-label">圖標</label>
+        <div class="col-sm-6">
+          <input type="text" class="form-control" id="icon" name="icon" placeholder="請輸入圖標">
+        </div>
+    </div>
+    <div class="form-group" style="display: none;" id="pidmodel">
+        <label for="parentid" class="col-sm-4 control-label" >父類id</label>
+        <div class="col-sm-6">
+          <input type="text" class="form-control" id="parentid" disabled="disabled" name="parentid" placeholder="請輸入父類id">
+        </div>
+    </div>
+  </div>
+
+
+<!--根路径-->
+<script>
+</script>
+
+<!--默认排序-->
+<script type="text/html" id="xuhao">
+    {{d.LAY_TABLE_INDEX+1}}
+</script>
+<script th:inline="none">
+    /*使用模块加载的方式 加载文件*/
+    prefix=ctx;
+    layui.config({
+        base: '../../layuiadmin/layui/css/modules/'
+    }).extend({
+        treetable: 'treetable-lay/treetable'
+    }).use(['layer', 'table', 'treetable'], function () {
+        var $ = layui.jquery;
+        var table = layui.table;
+        var layer = layui.layer;
+        var treetable = layui.treetable;
+        // 渲染表格
+        var renderTable = function () {//树桩表格参考文档：https://gitee.com/whvse/treetable-lay
+            layer.load(2);
+            treetable.render({
+                treeColIndex: 1,//树形图标显示在第几列
+                treeSpid: 0,//最上级的父级id
+                treeIdName: 'parentid',//id字段的名称
+                treePidName: 'parentid',//pid字段的名称
+                treeDefaultClose: false,//是否默认折叠
+                treeLinkage: true,//父级展开时是否自动展开所有子级
+                elem: '#permissionTable',
+                url: ctx+'sysMenu/nopageList',
+                // where: [{}],
+                page: false,
+                cols: [[
+                    {type: 'id',title: '序号',templet: '#xuhao'},
+                    {field: 'title', title: '资源名称'},
+                    {field: 'href', title: '资源路径'},
+                    {field: 'sequence', title: '排序'},
+                    {field: 'type', title: '类型',
+                        templet: function(d){
+                            if(d.type==1){
+                                return '菜单';
+                            }else{
+                                return '按钮';
+                            }
+                        }
+                    },
+                    {templet: complain, title: '操作'}
+                ]],
+                done: function () {
+                    layer.closeAll('loading');
+                }
+            });
+        };
+
+        renderTable();
+
+        //触发三个button按钮
+        $('#btn-expand').click(function () {
+            treetable.expandAll('#permissionTable');
+        });
+
+        $('#btn-fold').click(function () {
+            treetable.foldAll('#permissionTable');
+        });
+
+        $('#btn-refresh').click(function () {
+            renderTable();
+        });
+
+
+        function complain(d){//操作中显示的内容
+            //第三级目录没有子菜单
+            if(d.type==3){
+                return [
+                    '<a class="operation" lay-event="edit" href="javascript:void(0)" onclick="editDepartment(\''+ d.id + '\')" title="编辑">',
+                    '<i class="layui-icon layui-icon-edit"></i></a>',
+                    '<a class="operation" lay-event="" href="javascript:void(0)" onclick="delDepartment(\''+ d.id + '\')" title="删除">',
+                    '<i class="layui-icon layui-icon-delete" ></i></a>',
+                ].join('');
+            }
+            else {
+                return [
+                    '<a class="operation" lay-event="edit" href="javascript:void(0)" onclick="editDepartment(\''+ d.id + '\')" title="编辑">',
+                    '<i class="layui-icon layui-icon-edit"></i></a>',
+                    '<a class="operation" lay-event="" href="javascript:void(0)" onclick="delDepartment(\''+ d.id + '\')" title="删除">',
+                    '<i class="layui-icon layui-icon-delete" ></i></a>',
+                    '<a class="operation" lay-event="" href="javascript:void(0)" onclick="addDepartment(\''+ d.id + '\')" title="添加子按钮">',
+                    '<i class="layui-icon layui-icon-add-1" ></i></a>',
+                ].join('');
+            }
+
+        }
+    });
+
+    function delDepartment(obj){
+        layer.confirm('真的删除行么', function(index){
+            layer.close(index);
+            //向服务端发送删除指令
+            $.ajax({
+                type: 'DELETE',
+                url: prefix+'sysMenu/'+obj,
+                dataType : "json",
+                contentType:'application/json',
+                success: function (data) {
+                	if(data.code==200){
+                		layer.alert("删除成功");
+                	}
+                	else{
+                		layer.alert("删除失敗");
+                	}
+                },
+                error:function(data){
+                	if(data.status==500){
+                		layer.msg("您沒有權限");
+                    }
+                }
+            });
+        });
+    };
+    function editDepartment(d){
+
+        $.ajax({
+            type: 'get',
+            url: ctx+'sysMenu/'+d,
+            dataType : "json",
+            contentType:'application/json',
+            success: function (data) {
+                $("#id").val(data.id);
+                $("#title").val(data.title);
+                $("#href").val(data.href);
+                $("#sequence").val(data.sequence);
+                $("#parentid").val(data.parentid);
+                $("#icon").val(data.icon);
+                $("#type").val(data.type);
+                layer.open({
+                    type: 1,
+                    title:'修改菜單信息',
+                    content: $('#addmodel'),
+                    area: ['380px', '360px'],
+                    btn: ['確定', '关闭'],
+                    yes: function(){add(); }
+                });
+            },
+            error:function(data){
+            	if(data.status==500){
+            		layer.msg("您沒有權限");
+                }
+            }
+        });
+    };
+
+    function addDepartment(obj){
+        $("#id").val("");
+        $("#title").val("");
+        $("#href").val("");
+        $("#sequence").val("");
+        $("#icon").val("");
+        $("#type").val("2");
+        $("#pidmodel").css('display','block'); 
+        $("#parentid").val(obj);
+        $("#parentid").css('disabled',true);
+        layer.open({
+            type: 1,
+            title:'添加子按钮信息',
+            content: $('#addmodel'),
+            area: ['380px', '370px'],
+            btn: ['確定', '关闭'],
+            yes: function(){add(); }
+        });
+    };
+
+
+    function addPermission(){
+        $("#id").val("");
+        $("#title").val("");
+        $("#href").val("");
+        $("#sequence").val("");
+        $("#icon").val("");
+        $("#type").val("1");
+        $("#pidmodel").css('display','none'); 
+        $("#parentid").val("0");
+        $("#parentid").css('disabled',false);
+        layer.open({
+            type: 1,
+            title:'添加菜单信息',
+            content: $('#addmodel'),
+            area: ['380px', '360px'],
+            btn: ['確定', '关闭'],
+            yes: function(){add(); }
+        });
+    }
+
+    function add(){
+        var  id=$("#id").val();
+        var title=$("#title").val();
+        var  href=$("#href").val();
+        var  sequence=$("#sequence").val();
+        var  parentid=$("#parentid").val();
+        var  icon=$("#icon").val();
+        var  type=$("#type").val();
+        var  data={id:id,href:href,title:title,sequence:sequence,parentid:parentid,icon:icon,type:type};
+        $.ajax({
+            type: 'POST',
+            url: ctx+'sysMenu/save',
+            dataType : "json",
+            contentType:'application/json',
+            data:JSON.stringify(data),
+            success: function (data) {
+            	if(data.code==200){
+                    layer.msg("操作成功");
+            	}
+                else{
+                    layer.msg("操作失敗");
+                }
+                layer.closeAll();
+            },
+            error:function(data){
+            	if(data.status==500){
+            		layer.msg("您沒有權限");
+                }
+            }
+        });
+    }
+
+</script>
+</html>

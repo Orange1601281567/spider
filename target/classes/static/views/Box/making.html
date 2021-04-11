@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>F4 跨樓層料件 編箱程式</title>
+    <link rel="stylesheet" href="../../layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../layuiadmin/style/bootstrap.min.css" media="all">
+    <script src="../../layuiadmin/jquery/jquery-1.11.3.min.js"></script>
+    <script src="../../layuiadmin/jquery/bootstrap.min.js"></script>
+    <script src="../../layuiadmin/jquery/CardReader.js"></script>
+    <script src="../../layuiadmin/layui/layui.js"></script>
+    <script src="../../layuiadmin/layui/layui_exts/excel.js"></script>
+<!--     <script src="../../layuiadmin/jquery/shiro.js"></script> -->
+</head>
+<body  id="loginbody">
+<div class="container-fluid">
+	<div class="row">
+	  <div class="col-md-1"></div>
+	  <div class="col-md-10">
+	  	<div class="form-inline" style="margin-top:30px">
+	  		<div class="form-group">
+			    <label for="inputline">線別</label>
+			    <input type="text" class="form-control" id="inputline" name="inputline" disabled="disabled">
+			  </div>
+			  <div class="form-group">
+			    <label for="username">編箱工號</label>
+			    <input type="text" class="form-control" id="username" name="username" disabled="disabled">
+			  </div>
+			  <div class="form-group">
+			    <label for="there">去向</label>
+			    <select type="text" class="form-control" id="there" name="there">
+<!-- 			    	<option value="">請選擇去向</option>
+			        <option value="3F">3F</option>
+			        <option value="4F">4F</option>
+			        <option value="2F">2F</option>
+			        <option value="QR">QR</option>
+			        <option value="FAE">FAE</option> -->
+			    </select>
+			  </div>
+			  <div class="form-group">
+			    <label for="type">類型</label>
+			    <select type="text" class="form-control" id="type" name="type">
+			    	<option value="">請選擇類別</option>
+			    	<option value="70CG">70CG</option>
+			    	<option value="70HSG">70HSG</option>
+			        <option value="80">80</option>
+			        <option value="MLB">MLB</option>
+			        <option value="CG">CG</option>
+			        <option value="HSG">HSG</option>
+			        <option value="CY">CY</option>
+			        <option value="DOCK">DOCK</option>
+			        <option value="Battery">Battery</option>
+			        <option value="PAM">PAM</option>
+			        <option value="RCAM">RCAM</option>
+			    </select>
+			  </div>
+			  <div class="form-group">
+			    <label for="sn">在編SN</label>
+			    <input type="text" class="form-control" id="sn" name="sn" onkeydown="submitsn(event)"  disabled="disabled" >
+			  </div>
+	  	</div>
+	  	
+	  		<!-- 編箱信息和已編箱信息Tab -->
+			<div class="layui-tab" style="width:95%; margin-top: 35px;">
+			  <ul class="layui-tab-title">
+			    <li class="layui-this">在編sn</li>
+			    <li>已編箱號</li>
+			  </ul>
+			  <div class="layui-tab-content">
+			  
+			  <!-- 在編sn表格和數據  -->
+			    <div class="layui-tab-item layui-show">
+			      	<div style="float:left">
+			      		<table id="demo" lay-filter="test" style="float:left"></table>
+			      	</div>
+			      	<div style="float:left;height:300px;width:100px">
+						<div style="margin: 50px auto;">
+							<div class="layui-input-block" style="margin:50px auto;text-align:center">
+					            <button class="layui-btn layui-btn-normal layui-btn-lg" onclick="start()" ondblclick="dblstart()">Start</button>
+					        </div>
+					        <div class="layui-input-block" style="margin:50px auto;text-align:center">
+					           <button class="layui-btn layui-btn-normal layui-btn-lg" onclick="end()">End</button>
+					        </div>
+					        <div class="layui-input-block" style="margin:50px auto;text-align:center">
+					        	<label>六位箱號</label>
+					        	<br>
+					            <input type="text" id="caseno" disabled="disabled" name="caseno" class="casebox">
+					        </div>
+						</div>
+						</div>
+			    </div>
+			    
+			    <!-- 已編箱表格和數據  -->
+			    <div class="layui-tab-item">
+			    	<div style="float:left">
+			      		<table id="case" lay-filter="case" style="float:left"></table>
+			      	</div>
+			    </div>
+			  </div>
+			</div>
+	  </div>
+	  <div class="col-md-1"></div>
+	</div>
+</div>
+</body>
+
+<!-- 查看箱號信息信息 -->
+<div class="form-horizontal" id="addmodel" style="display: none; width: 400px;">
+	<div class="form-inline" style="margin-top: 10px;margin-left: 25px">
+        <div class="form-group" >
+          <input type="text" class="form-control" id="sn2" name="sn2" placeholder="請輸入sn">
+        </div>
+        <button class="btn btn-info" onclick="searchsn()">搜索</button>
+    </div>
+	<table id="casesn" lay-filter="casesn"></table>
+</div>
+
+<style type="text/css">
+    #captchaCode{
+        float: left;
+    }
+    #codePic{
+        float: right;
+        display: inline-block;
+        cursor: pointer;
+    }
+    body{
+        background-color:#f5f5f5;
+        background-repeat: no-repeat;
+        background-size: 100%,100%;
+    }
+    .loginbox{
+        -moz-box-shadow:2px 2px 5px #333333;
+        -webkit-box-shadow:2px 2px 5px #333333;
+        box-shadow:2px 2px 5px #333333;
+    }
+    .casebox{
+    	width: 120px;
+    	height:40p;
+    	line-height:40px;
+    	font-size:22px;
+    	color:red;
+    }
+
+</style>
+
+<script>
+
+window.onbeforeunload = onbeforeunload_handler;    
+function onbeforeunload_handler()
+{
+	if(localStorage.getItem("goTo") != "lock"){
+		 localStorage.setItem("goTo",ctx+"views/loginbox.html");
+			$.ajax({
+				method:"GET",
+				url:ctx+"logout",
+				success:result=>{
+					if(result || result=="true")localStorage.setItem("goTo",ctx+"views/loginbox.html");
+				}
+			});
+	}else{
+		localStorage.removeItem("goTo");
+	}
+}
+goOut();
+function goOut(){
+	const url = localStorage.getItem("goTo");
+	if(url != null && url != ""){
+		localStorage.setItem("goTo","lock");
+		window.location.href = url;
+	}
+}
+//是否開始編箱
+ var startbox=false;
+ $("#username").val(localStorage.getItem("username"));
+ $("#inputline").val(localStorage.getItem("inputline"));
+ 
+ //渲染去向下拉菜單
+ layui.use('form', function(){
+	
+	    var form = layui.form;
+	    var inputline= $("#inputline").val()
+	    //下拉選擇角色框
+	    var option = "<option value='' >請選擇</option>";//初始化option的选项
+	    $("#there").append(option);
+	    $.ajax({
+	        url: ctx+'wlBoxSitethere/loadbyline/'+inputline,
+	        type: 'GET',
+	        success: function (data) {
+	        	for(var i=0;i<data.length;i++){  
+	        		 var option = document.createElement("option");
+	                 option.setAttribute("value", data[i].there);
+	                 option.innerText = data[i].there;
+	                 $("#there").append(option)
+	           }
+	           form.render('select');//重点：重新渲染selec
+	        }
+	    })      
+	});
+
+
+//定义setTimeout执行方法(讓雙擊不執行單擊方法)
+var TimeFn = null;
+
+//開始編箱
+function start(){
+	//生成箱號
+	var  there=$("#there").val();
+	var  type=$("#type").val();
+	if(there==null||there==""){
+ 		layer.msg("請選擇去向");
+ 		startbox=false;
+ 	}
+	if(type==null||type==""){
+ 		layer.msg("請選擇類型");
+ 		startbox=false;
+ 	}
+	if(type!=null&&type!=""&&there!=null&&there!=""){
+		
+		layui.use('form', function(){
+		    var form = layui.form;
+		    $('select').attr('disabled', 'disabled');
+		    //各种基于事件的操作，下面会有进一步介绍
+		    //给表单赋值
+		    form.render('select');; 
+		});
+		startbox=true;
+		$("#caseno").val("");
+		
+	}
+	// 取消上次延时未执行的方法
+    clearTimeout(TimeFn);
+    //执行延时
+    TimeFn = setTimeout(function(){
+        //do function在此处写单击事件要执行的代码
+    },300);
+}
+
+//雙擊去重
+function dblstart(){
+	// 取消上次延时未执行的方法
+    clearTimeout(TimeFn);
+	
+	$.ajax({
+        type: 'delete',
+        url: ctx+'wlBoxSn/deleterepeat',
+        dataType : "json",
+        contentType:'application/json',
+        success: function (data) {
+        	if(data.code==200){
+        		layer.msg("去重成功");
+        	}
+        	layui.table.reload('test',{
+                page: {
+                      curr: 1 //重新从第 1 页开始
+                  }
+              });
+        }
+    });
+}
+
+
+
+//裝箱
+function end(){
+	startbox=false;
+	var  username=$("#username").val();
+	var  inputline=$("#inputline").val();
+	var  there=$("#there").val();
+	// 定义一个变量  默认为true
+	var flag=true;
+	if(there==null||there==""){
+ 		layer.msg("請選擇去向");
+ 		flag=false;
+ 	}
+    if(flag==true){
+    	//生成箱號
+    	var caseno = "",
+        arr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9','A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+    	for(var i=0; i<6; i++){
+    	    var index = Math.round(Math.random() * (arr.length-1));
+    	    caseno += arr[index];
+    	}
+    	var  data={op:username,inputline:inputline,there:there,caseno:caseno};
+    	//裝箱
+        $.ajax({
+            type: 'POST',
+            url: ctx+'wlBoxCase/insert',
+            dataType : "json",
+            contentType:'application/json',
+            data: JSON.stringify(data),
+            success: function (data) {
+            	$("#caseno").val("");
+            	startbox=false;
+            	if(data.code==500){
+            		layer.msg(data.msg);
+            		$("#caseno").val("");
+            	}
+            	if(data.code==200){
+            		$("#caseno").val(caseno);
+            		layer.msg("裝箱成功");
+            	}
+            	layui.table.reload('test',{
+                  page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                });
+            	layui.table.reload('case',{
+                    page: {
+                          curr: 1 //重新从第 1 页开始
+                      }
+                  });
+            	
+            	//把選擇框變為可編輯
+            	layui.use('form', function(){
+        		    var form = layui.form;
+        		    $('select').attr('disabled', false);
+        		    //各种基于事件的操作，下面会有进一步介绍
+        		    //给表单赋值
+        		    form.render('select');
+        		});
+            }
+        });
+    }
+     	
+		
+}
+
+//判斷是否含有中文
+function IsChar(s)
+{
+ var Number = "0123456789.abcdefghijklmnopqrstuvwxyz-+\/ABCDEFGHIJKLMNOPQRSTUVWXYZ`~!@#$%^&*()_";
+ for (i = 0; i < s.length;i++)
+    {  
+        // Check that current character isn't whitespace.
+        var c = s.charAt(i);
+        if (Number.indexOf(c) == -1) 
+        return false;
+    }
+//判断字符串是否含有数字和字母组合  
+ var p = /[0-9]/;  
+  if (!p.test(s))  {  
+     return false;  
+  }
+  var p2 = /[a-z]/i; 
+  if (!p2.test(s))  {  
+	     return false;  
+	  }
+ return true
+}
+
+//輸入在編sn
+function submitsn(event){
+	var  sn=$("#sn").val();
+	var  username=$("#username").val();
+	var  inputline=$("#inputline").val();
+	var  there=$("#there").val();
+	var  type=$("#type").val();
+	var  data={op:username,inputline:inputline,there:there,sn:sn};
+	//if (event.keyCode==13) {
+		// 定义一个变量  默认为true
+		var flag=true;
+		if(startbox==false){
+     		layer.msg("請點擊Start再開始sn編箱操作");
+     		flag=false;
+     	}
+		
+     	if(there==null||there==""){
+     		layer.msg("請選擇去向");
+     		flag=false;
+     	}
+     	if(sn==null||sn==""){
+     		layer.msg("sn不能爲空");
+     		flag=false;
+     	}
+     	
+     	if (!IsChar(sn)){
+     		layer.msg("sn不能爲中文且必須含有數字和字母");
+ 			flag=false;
+     	}
+     	
+     	if(type=="80"&&sn.length!=12){
+     		layer.msg("格式錯誤");
+     		flag=false;
+     	}
+     	
+     	if(type=="70CG"&&sn.length!=17){
+     		layer.msg("格式錯誤");
+     		flag=false;
+     	}
+     	
+     	if(type=="70HSG"&&sn.length!=17){
+     		layer.msg("格式錯誤");
+     		flag=false;
+     	}
+     	
+     	if(type=="MLB"&&sn.length!=17){
+     		layer.msg("格式錯誤");
+     		flag=false;
+     	}
+     	
+     	if(type=="CG"&&sn.length!=23){
+     		layer.msg("格式錯誤");
+     		flag=false;
+     	}
+     	
+     	if(type=="HSG"&&sn.length!=58){
+     		layer.msg("格式錯誤");
+     		flag=false;
+     	}
+     	
+    	if(type=="CY"&&sn.length!=21){
+     		layer.msg("格式錯誤");
+     		flag=false;
+     	}
+     	
+     	if(type=="DOCK"&&sn.length!=30){
+     		layer.msg("格式錯誤");
+     		flag=false;
+     	}
+     	
+     	if(type=="Battery"&&sn.length!=21){
+     		layer.msg("格式錯誤");
+     		flag=false;
+     	}
+     	
+     	
+     	if(type=="PAM"&&sn.length!=17){
+     		layer.msg("格式錯誤");
+     		flag=false;
+     	}
+     	if(type=="RCAM"&&sn.length!=17){
+     		layer.msg("格式錯誤");
+     		flag=false;
+     	}
+     	
+     	//加入在編sn
+     	if(flag==true){
+            $.ajax({
+                type: 'POST',
+                url: ctx+'wlBoxSn/insert',
+                dataType : "json",
+                contentType:'application/json',
+                data: JSON.stringify(data),
+                success: function (data) {
+                	layui.table.reload('test',{
+                      page: {
+                            curr: 1 //重新从第 1 页开始
+                        }
+                    });
+                	$("#sn").val("");
+                }
+            });
+     	}
+		
+	//	}
+}
+
+
+//初始化在編sn表格数据
+layui.use('table', function(){
+	var  username=$("#username").val();
+	var  inputline=$("#inputline").val();
+    var table = layui.table;
+    //第一个实例
+    table.render({
+        elem: '#demo'
+        ,id: 'test'	//表格的索引
+        ,url: ctx+'wlBoxSn/pageList' //数据接口
+        ,where:{inputline:inputline}
+        ,page: true
+        ,height:380
+       	,width:900
+       	,toolbar:'#barDemo'
+       	,totalrow: false
+        ,cols: [
+            [ //表头
+            {type: 'checkbox', fixed: 'left'}
+            ,{type:'numbers', title: '序號'}
+            ,{field: 'sn', title: 'SN'}
+            ,{field: 'inputtime', title: '裝箱時間'}
+            ,{field: 'op', title: '裝箱工號'}
+            ,{field: 'inputline', title: '綫別'}
+            ,{field: 'there', title: '去向'}
+             ]
+        ]
+       	,initSort: {
+       	    field: 'inputtime' //排序字段，对应 cols 设定的各字段名
+       	    ,type: 'desc' //排序方式  asc: 升序、desc: 降序、null: 默认排序
+       	  }
+    });
+    
+});
+
+
+//初始化已編箱表格数据
+layui.use('table', function(){
+	var  username=$("#username").val();
+	var  inputline=$("#inputline").val();
+    var table = layui.table;
+    //第一个实例
+    table.render({
+        elem: '#case'
+        ,id: 'case'	//表格的索引
+        ,url: ctx+'wlBoxCase/pageList' //数据接口
+        ,where:{inputline:inputline} 
+        ,page: true
+        ,height:380
+        ,width:1100
+       	,toolbar:'#barDemo2'
+       	,defaultToolbar:['filter','print','exports']
+       	,initSort: {
+       	    field: 'inputtime' //排序字段，对应 cols 设定的各字段名
+       	    ,type: 'desc' //排序方式  asc: 升序、desc: 降序、null: 默认排序
+       	  }
+        ,cols: [
+            [ //表头
+            {type: 'checkbox', fixed: 'left'}
+            ,{type:'numbers', title: '序號'}
+            ,{field: 'caseno', title: '箱號',event: 'lookcase', style:'color: blue;'}
+            ,{field: 'inputtime', title: '裝箱時間'}
+            ,{field: 'op', title: '裝箱工號'}
+            ,{field: 'inputline', title: '綫別'}
+            ,{field: 'qty', title: '數量'}
+            ,{field: 'there', title: '去向'}
+            , {fixed: 'right', align:'center', toolbar: '#bardo'}
+             ]
+        ]
+    });
+    
+    //渲染每個箱號的SN信息
+    table.render({
+        elem: '#casesn'
+        ,id: 'casesn'	//表格的索引
+        ,url: ctx+'wlBoxSnbox/pageList' //数据接口
+        ,page: false
+        ,height:230
+        ,width:380
+        ,method: 'get' //默认：get请求
+        ,cols: [
+            [ //表头
+			{field: 'sn', title: 'SN',width:'370'}
+             ]
+        ]
+    });
+    
+    //每行的下載
+    table.on('tool(case)',function(obj){
+        var data = obj.data;
+        var caseno=data.caseno;
+        var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+        var tr = obj.tr; //获得当前行 tr 的DOM对象
+        if (layEvent === 'export') { //删除
+                //向服务端发送删除指令
+                $.ajax({
+                    type: 'GET',
+                    url: ctx+'wlBoxCase/export/'+caseno,
+                    cache: false, //上传文件不需要缓存
+                    processData: false, // 告诉jQuery不要去处理发送的数据
+                    contentType: false, // 告诉jQuery不要去设置Content-Type请求头
+                    success: function (data) {
+                        window.open(ctx+'wlBoxCase/export/'+caseno);
+                    }
+                });
+        } 
+        if (layEvent === 'lookcase') { //查看     
+        	layer.open({
+                type: 1,
+                title:'箱號'+caseno+'SN信息',
+                area : ['400px','400px'],
+                content: $('#addmodel'),
+                btn: ['关闭'],
+            });
+        }
+    });
+    
+});
+
+
+// 查詢SN信息
+function searchsn(){
+    var sn=$('#sn2').val();
+    //执行渲染
+    layui.table.reload('casesn',{
+        where: { //设定异步数据接口的额外参数，任意设
+        	sn:sn,
+        }
+    });
+}
+
+//批量刪除在編sn
+function deleteids(){
+	//监听头工具栏事件
+      var checkStatus = layui.table.checkStatus('test')
+      //获取选中数量
+      var selectCount = checkStatus.data.length;
+      if(selectCount == 0){
+          layer.msg('批量删除至少选中一项数据',function(){});
+          return false;
+      }
+      
+      layer.confirm('真的要删除选中的项吗？', function(index){
+    	  layer.close(index);
+          index = layer.load(1, {shade: [0.1,'#fff']});
+          var ids = [];
+          for(var i=0; i<selectCount; i++){
+        	  ids.push(checkStatus.data[i].id);
+          }
+          var  data={ids:ids};
+          //向服务端发送删除指令
+          $.ajax({
+              type: 'Delete',
+              url: ctx+'wlBoxSn/deleteids',
+              dataType : "json",
+              contentType:'application/json',
+              data:JSON.stringify(ids),
+              success: function (data) {
+            	  if (data.code == 200) {
+		    			layer.msg('删除成功！',{icon:6,offset:"auto",time:2000});//提示框
+					}else{
+						layer.msg('删除失敗！',{icon:5,offset:"auto",time:2000});//提示框
+					}
+            	//重新加载页面表格
+            	  layui.table.reload('test',{
+                      page: {
+                            curr: 1 //重新从第 1 页开始
+                        }
+                    });
+            	 layer.close(index); 
+              }});
+      });
+}
+
+//批量導出已編箱數據
+function excelExport(){
+	prefix=ctx;
+	//监听头工具栏事件
+      var checkStatus = layui.table.checkStatus('case')
+      //获取选中数量
+      var selectCount = checkStatus.data.length;
+      if(selectCount == 0){
+          layer.msg('批量下載至少选中一项数据',function(){});
+          return false;
+      }
+      var casenos = "";
+      for(var i=0; i<selectCount; i++){
+    	  casenos=checkStatus.data[i].caseno+casenos;
+      }
+      window.open(ctx+'wlBoxCase/exportall/'+casenos);  
+}
+
+//已編箱查询
+function find(){
+    var  caseno=$("#caseno2").val();
+    //执行渲染
+    layui.table.reload('case',{
+        where: { //设定异步数据接口的额外参数，任意设
+        	caseno:caseno
+        },page: {
+            curr: 1 //重新从第 1 页开始
+        }
+    }); 
+}
+
+//批量刪除已裝箱記錄
+function deleteids2(){
+	//监听头工具栏事件
+      var checkStatus = layui.table.checkStatus('case')
+      //获取选中数量
+      var selectCount = checkStatus.data.length;
+      if(selectCount == 0){
+          layer.msg('批量删除至少选中一项数据',function(){});
+          return false;
+      }
+      
+      layer.confirm('真的要删除选中的项吗？', function(index){
+    	  layer.close(index);
+          index = layer.load(1, {shade: [0.1,'#fff']});
+          var ids = [];
+          for(var i=0; i<selectCount; i++){
+        	  ids.push(checkStatus.data[i].id);
+          }
+          var  data={ids:ids};
+          //向服务端发送删除指令
+          $.ajax({
+              type: 'Delete',
+              url: ctx+'wlBoxCase/deleteids',
+              dataType : "json",
+              contentType:'application/json',
+              data:JSON.stringify(ids),
+              success: function (data) {
+            	  if (data.code == 200) {
+		    			layer.msg('删除成功！',{icon:6,offset:"auto",time:2000});//提示框
+					}
+            	  else{
+						layer.msg('删除失敗！',{icon:5,offset:"auto",time:2000});//提示框
+					}
+            	//重新加载页面表格
+            	  layui.table.reload('case',{
+                      page: {
+                            curr: 1 //重新从第 1 页开始
+                        }
+                    });
+            	 layer.close(index); 
+              },
+              error:function(data){
+            	  if (data.status == 500) {
+		    			layer.msg('抱歉，用戶沒有該權限！');//提示框
+					}
+            	  else{
+            		  layer.msg('未知錯誤！');
+            	  }
+            	  
+            	//重新加载页面表格
+            	  layui.table.reload('case',{
+                      page: {
+                            curr: 1 //重新从第 1 页开始
+                        }
+                    });
+            	 layer.close(index); 
+              }
+          
+          });
+      });
+}
+
+//注意：选项卡 依赖 element 模块，否则无法进行功能性操作
+layui.use('element', function(){
+  var element = layui.element;
+  
+  //…
+});
+document.body.onload = function () {
+    /**
+     * CardReader.init(回調函數,限定長度的數組,特殊字符映射) 
+     * 回調函數: 返回字符串
+     * 
+     * 限定長度的數組:
+     * 數組默認 [12, 17, 21, 22, 23, 67] 新傳會覆蓋掉之前的
+     * 下面的等同於
+     * CardReader.init((res)=>{
+        console.log(res)
+        },[12, 17, 21, 22, 23, 67],{189:"-"})
+     * */
+    CardReader.init((res) => {
+        var str =res;
+       	console.log(str)
+       	$("#sn").val(str);
+       	submitsn();
+    })
+    // 禁用
+    CardReader.stop()
+    // 啓用
+    CardReader.start()
+}
+</script>
+<script th:inline="none" type="text/html" id="barDemo">
+<div class="text-right"> 
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" onclick="deleteids()">删除</a>
+</div>
+</script>
+
+<script th:inline="none" type="text/html" id="barDemo2">
+<div class="text-right"> 
+    	<input name="caseno2" id="caseno2" placeholder="請輸入箱號" autocomplete="off">
+	<a class="layui-btn layui-btn-success layui-btn-xs" onclick="find()">查詢</a>
+	<a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="del" onclick="excelExport()">下載</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" onclick="deleteids2()">删除</a>
+</div>
+</script>
+<script th:inline="none" type="text/html" id="bardo">
+	<a class="layui-btn layui-btn-edit layui-btn-xs" lay-event="export" >下載</a>
+</script>
+</html>

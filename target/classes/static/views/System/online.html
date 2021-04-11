@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:shiro="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>index</title>
+    <link rel="stylesheet" href="../../layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../layuiadmin/style/bootstrap.min.css" media="all">
+    <script src="../../layuiadmin/jquery/jquery-1.11.3.min.js"></script>
+    <script src="../../layuiadmin/jquery/bootstrap.min.js"></script>
+    <script src="../../layuiadmin/layui/layui.js"></script>
+</head>
+<body>
+
+
+
+<!-- 表格  -->
+<table id="demo" lay-filter="test" style="margin-top: 45px;"></table>
+</body>
+
+<script th:inline="none">
+
+    //初始化下拉框數據
+    layui.use('form', function(){
+        var form = layui.form;
+        
+        //下拉選擇角色框
+        var option = "<option value=''>請選擇</option>";//初始化option的选项
+        $("#rolename").append(option);
+        $.ajax({
+            url: ctx+'sysRole/list',
+            type: 'get',
+            success: function (data) {
+                for(var i=0;i<data.length;i++){  
+                    option = document.createElement("option");
+                    option.setAttribute("value", data[i].id);
+                    option.innerText = data[i].name;
+                    $("#rolename").append(option); 
+            }
+            form.render('select');//重点：重新渲染selec
+            }
+        })    
+        
+    });
+
+    //初始化用户数据
+    layui.use('table', function(){
+        var table = layui.table;
+        //第一个实例
+        table.render({
+            elem: '#demo'
+            ,id: 'test'	//表格的索引
+            ,url: ctx+'sysUsers/onlineSession' //数据接口
+            ,page: true
+            ,height:460
+            ,method: 'post' //默认：get请求
+            ,cols: [
+                [ //表头
+                {field: 'userId', title: '用户名'}
+                ,{field: 'loginName', title: '姓名'}
+                ,{field: 'host', title: 'IP地址'}
+                ,{field: 'os', title: '操作系統'}
+                ,{field: 'browser', title: '瀏覽器'}
+                , {fixed: 'right', width:200, align:'center', toolbar: '#barDemo'}
+                 ]
+            ]
+        });
+
+        //每行的删除和修改
+        table.on('tool(test)',function(obj){
+            var data = obj.data;
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的DOM对象
+            if (layEvent === 'del') { //删除
+                layer.confirm('真的删除行么', function(index){
+                    obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                    layer.close(index);
+                    //向服务端发送删除指令
+                    $.ajax({
+                        type: 'DELETE',
+                        url: ctx+'sysUsers//onlinedel/'+data.sessionId,
+                        dataType : "json",
+                        contentType:'application/json',
+                        success: function (data) {
+                            layer.alert(data.message);
+                        }});
+                });
+            }
+        });
+
+    });
+
+
+
+    
+
+
+
+</script>
+<script th:inline="none" type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" >强制退出</a>
+</script>
+</html>

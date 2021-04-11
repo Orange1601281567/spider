@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Layui</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../layuiadmin/style/admin.css" media="all">
+    <script src="../../layuiadmin/layui/layui.js"></script>
+    <script src="../../layuiadmin/jquery/jquery-1.11.3.min.js"></script>
+  <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body> 
+  <div style="margin:50px 150px;">
+    <fieldset class="layui-elem-field layui-field-title" >
+      <legend>使用必讀</legend>
+    </fieldset>  
+
+    <div class="layui-collapse" lay-accordion>
+      <div class="layui-colla-item">
+        <h2 class="layui-colla-title">后台管理提示</h2>
+        <div class="layui-colla-content layui-show">
+          <p>1.如遇到側邊欄菜單無法加載,請刷新頁面</p>
+          <p>2.如遇到修改信息時提示修改成功，數據沒有更新,請刷新頁面</p>
+          <p>3.如遇到點擊按鈕沒有反應，請查看用戶是否擁有該權限</p>
+          <p>4.在沒有特殊需求的情況下，請勿更改菜單信息和角色信息<span style="color: red;">(用戶修改角色，請在用戶信息中更改)</span></p>
+        </div>
+      </div>
+      <div class="layui-colla-item">
+        <h2 class="layui-colla-title">編箱操作提示</h2>
+        <div class="layui-colla-content layui-show">
+          <p>1.在登陸后請勿刷新頁面，一旦刷新，必須重新登陸</p>
+          <p>2.在選錯類型或樓層start時，請將在編的sn清除，再進行以下操作<span style="color: blue;">end=>填入數據=>start</span></p>
+          <p>3.如遇到點擊按鈕沒有反應，請查看用戶是否擁有該權限</p>
+        </div>
+      </div>
+      <div class="layui-colla-item">
+        <h2 class="layui-colla-title">查驗操作提示</h2>
+        <div class="layui-colla-content layui-show">
+          <p>1.在登陸后請勿刷新頁面，一旦刷新，必須重新登陸</p>
+          <p>2.在查驗過程中，只能查詢到未完成記錄，并且只能先出後進
+          <p>3.如遇到點擊按鈕沒有反應，請查看用戶是否擁有該權限</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+          
+<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+<script>
+layui.use(['element', 'layer'], function(){
+  var element = layui.element;
+  var layer = layui.layer;
+  
+});
+</script>
+
+</body>
+</html>

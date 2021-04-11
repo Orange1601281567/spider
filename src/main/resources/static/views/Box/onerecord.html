@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:shiro="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>index</title>
+    <link rel="stylesheet" href="../../layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../layuiadmin/style/bootstrap.min.css" media="all">
+    <script src="../../layuiadmin/jquery/jquery-1.11.3.min.js"></script>
+    <script src="../../layuiadmin/jquery/bootstrap.min.js"></script>
+    <script src="../../layuiadmin/layui/layui.js"></script>
+</head>
+<body>
+    <div class="form-inline">
+        <div class="form-group" style="margin: 25px 25px">
+          <input type="text" class="form-control" id="op" name="op" placeholder="請輸入携帶人工號">
+        </div>
+        <button class="btn btn-info"  onclick="search()">搜索</button>
+    </div>
+
+<!-- 表格  -->
+<table id="demo" lay-filter="test"></table>
+</body>
+<script th:inline="none">
+    //初始化下拉框數據
+    layui.use('form', function(){
+        var form = layui.form;
+        form.render('select');//重点：重新渲染selec  
+        
+    });
+
+    //初始化用户数据
+    layui.use('table', function(){
+        var table = layui.table;
+        //第一个实例
+        table.render({
+            elem: '#demo'
+            ,id: 'test'	//表格的索引
+            ,url: ctx+'/wlBoxOnerecord/pageList' //数据接口
+            ,page: true
+            ,height:460
+            ,method: 'get' //默认：get请求
+           	,initSort: {field: 'checktime' ,type: 'desc'}
+            ,cols: [
+                [ //表头
+                {field: 'op', title: '携帶人工號' }
+                ,{field: 'name', title: '携帶人姓名'}
+                ,{field: 'department', title: '部門'}
+                ,{field: 'productname', title: '品名'}
+                ,{field: 'qty', title: '數量'}
+                ,{field: 'there', title: '去向' }
+                ,{field: 'checktime', title: '查驗時間' }
+                ,{field: 'checkuserid', title: '查驗人' }
+                ,{field: 'site', title: '查驗崗點' }
+                ,{field: 'status', title: '放行狀態' }
+                 ]
+            ]
+        });
+    });
+
+
+    // 查詢信息
+
+    function search(){
+        var op=$('#op').val();
+        //执行渲染
+        layui.table.reload('test',{
+            where: { //设定异步数据接口的额外参数，任意设
+            	op:op,
+            },page: {
+                curr: 1 //重新从第 1 页开始
+            }
+        });
+    }
+
+</script>
+</html>

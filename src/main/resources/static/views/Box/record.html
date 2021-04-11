@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:shiro="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>index</title>
+    <link rel="stylesheet" href="../../layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../layuiadmin/style/bootstrap.min.css" media="all">
+    <script src="../../layuiadmin/jquery/jquery-1.11.3.min.js"></script>
+    <script src="../../layuiadmin/jquery/bootstrap.min.js"></script>
+    <script src="../../layuiadmin/layui/layui.js"></script>
+    <script src="../../layuiadmin/layui/layui_exts/excel.js"></script>
+</head>
+<body>
+    <div class="form-inline">
+        <div class="form-group" style="margin: 25px 25px">
+          <input type="text" class="form-control" id="caseno" name="caseno" placeholder="請輸入箱號">
+        </div>
+        <button class="btn btn-info"  onclick="search()">搜索</button>
+    </div>
+
+<!-- 表格  -->
+<table id="demo" lay-filter="test"></table>
+</body>
+
+<!-- 查看箱號信息信息 -->
+<div class="form-horizontal" id="addmodel" style="display: none; width: 400px;">
+	<div class="form-inline" style="margin-top: 10px;margin-left: 25px">
+        <div class="form-group" >
+          <input type="text" class="form-control" id="sn" name="sn" placeholder="請輸入sn">
+        </div>
+        <button class="btn btn-info"  onclick="searchsn()">搜索</button>
+    </div>
+	<table id="casesn" lay-filter="casesn"></table>
+</div>
+
+<script th:inline="none">
+    //初始化下拉框數據
+    layui.use('form', function(){
+        var form = layui.form;
+        form.render('select');//重点：重新渲染selec  
+        
+    });
+
+    //初始化用户数据
+    layui.use('table', function(){
+        var excel = layui.excel;
+        var table = layui.table;
+        //第一个实例
+        table.render({
+            elem: '#demo'
+            ,id: 'test'	//表格的索引
+            ,url: ctx+'/wlBoxRecord/pageList' //数据接口
+            ,page: true
+            ,height:460
+            ,method: 'get' //默认：get请求
+            ,cols: [
+                [ //表头
+                {field: 'caseno', title: '箱號',event: 'lookcase', style:'color: blue;'}
+                ,{field: 'inputtime', title: '編箱時間'}
+                ,{field: 'op', title: '編箱工號'}
+                ,{field: 'inputline', title: '綫別'}
+                ,{field: 'qty', title: '數量'}
+                ,{field: 'there', title: '去向' }
+                ,{field: 'senduserid', title: '運送工號' }
+                ,{field: 'checktime', title: '查驗時間' }
+                ,{field: 'checkuserid', title: '查驗人' }
+                ,{field: 'site', title: '查驗崗點' }
+                ,{field: 'passtype', title: '放行方式' }
+                , {fixed: 'right', align:'center', toolbar: '#bardo'}
+                 ]
+            ]
+        });
+        
+        //渲染每個箱號的SN信息
+        table.render({
+            elem: '#casesn'
+            ,id: 'casesn'	//表格的索引
+            ,url: ctx+'wlBoxSnbox/pageList' //数据接口
+            ,page: true
+            ,height:230
+            ,width:380
+            ,method: 'get' //默认：get请求
+            ,cols: [
+                [ //表头
+				{field: 'sn', title: 'SN'}
+                 ]
+            ]
+        });
+        
+        //每行的裝箱信息
+        table.on('tool(test)',function(obj){
+            var data = obj.data;
+            var caseno=data.caseno;
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的DOM对象
+            if (layEvent === 'lookcase') { //查看
+            	
+            	layui.table.reload('casesn',{
+                    where: { //设定异步数据接口的额外参数，任意设
+                    	caseno:caseno,
+                    },page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                });
+            
+            	layer.open({
+                    type: 1,
+                    title:'箱號'+caseno+'SN信息',
+                    area : ['400px','400px'],
+                    content: $('#addmodel'),
+                    btn: ['关闭'],
+                });
+            } 
+            if (layEvent === 'export') { //删除
+            	var dataexport={caseno:caseno};
+            	$.ajax({
+                    type: 'post',
+                    url: ctx+'wlBoxRecord/list',
+                    dataType : "json",
+                    contentType:'application/json',
+                    data: JSON.stringify(dataexport),
+                    success: function (res) {
+                    	console.log(res)
+                  	// 1. 数组头部新增表头
+                        res.unshift({caseno: '箱號',qty: '數量', op: '編箱工號',inputline:'綫別',inputtime:'編箱時間',there:'去向',senduserid:'運送人員',site:'查驗崗點',checktime:'查驗時間',checkuserid:'查驗人',passtype:'放行方式'});
+                  	// 2. 如果需要调整顺序，请执行梳理函数
+                        var res = excel.filterExportData(res, [
+                            'caseno',
+                            'qty',
+                            'op',
+                            'inputline',
+                            'inputtime',
+                            'there',
+                            'senduserid',
+                            'site',
+                            'checktime',
+                            'checkuserid',
+                            'passtype'
+                        ]); 
+                        $.ajax({
+                            type: 'post',
+                            url: ctx+'wlBoxSnbox/list',
+                            dataType : "json",
+                            contentType:'application/json',
+                            data: JSON.stringify(dataexport),
+                            success: function (res2) {
+                            	res2.unshift({sn: 'SN'});
+                            	var res2 = excel.filterExportData(res2, [
+                                    'sn'
+                                ]); 
+                            	res.push.apply(res, res2);
+                            	// 3. 执行导出函数，系统会弹出弹框
+                                excel.exportExcel({
+                                    sheet1: res
+                                }, '箱號'+obj.data.caseno+'查驗信息.xlsx', 'xlsx');
+                            }});
+                    }});
+            } 
+        });
+        
+    });
+
+
+    // 查詢信息
+    function search(){
+        var caseno=$('#caseno').val();
+        //执行渲染
+        layui.table.reload('test',{
+            where: { //设定异步数据接口的额外参数，任意设
+            	caseno:caseno,
+            },page: {
+                curr: 1 //重新从第 1 页开始
+            }
+        });
+    }
+    
+    // 查詢SN信息
+    function searchsn(){
+        var sn=$('#sn').val();
+        //执行渲染
+        layui.table.reload('casesn',{
+            where: { //设定异步数据接口的额外参数，任意设
+            	sn:sn,
+            },page: {
+                curr: 1 //重新从第 1 页开始
+            }
+        });
+    }
+    
+
+</script>
+<script th:inline="none" type="text/html" id="bardo">
+	<a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="export" >下載</a>
+</script>
+</html>

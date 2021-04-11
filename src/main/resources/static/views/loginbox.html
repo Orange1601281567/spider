@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
+	<meta http-equiv="Pragma" content="no-cache"> 
+	<meta http-equiv="Cache-Control" content="no-cache"> 
+	<meta http-equiv="Expires" content="0"> 
+	<title>物料管控編箱系统</title>
+	  <meta name="renderer" content="webkit">
+	  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	  <script src="../layuiadmin/layui/layui.js"></script>
+	  <link rel="stylesheet" href="../layuiadmin/layui/css/layui.css" media="all">
+	  <link rel="stylesheet" href="../layuiadmin/style/bootstrap.min.css" media="all">
+	  <script src="../layuiadmin/jquery/jquery-1.11.3.min.js"></script>
+</head>
+<body  id="loginbody">
+<div class="text-center" style="margin-top: 100px;">
+	<img alt="" class="text-center" src="../layuiadmin/layui/images/make.png" width="400px">
+</div>
+<div class="loginbox" style="width: 400px;height: 300px;margin: 0px auto; background-color:#fff">
+    <div class="form-horizontal">
+<!-- 	    	<div style="margin-top:20px">
+	    		<h3><p class="text-center">F4 跨樓層料件<span style="color:red">編箱</span>程式</p></h3>
+	    	</div> -->
+	    	<div class="form-group" style="padding-top: 40px">
+			    <label for="username" class="col-sm-3 control-label">用户名</label>
+			    <div class="col-sm-8">
+			      <input type="text" class="form-control" id="username" name="username" placeholder="請輸入用戶名">
+			    </div>
+			</div>
+			<div class="form-group" style="padding-top: 12px">
+			    <label for="password" class="col-sm-3 control-label">密&emsp;碼</label>
+			    <div class="col-sm-8">
+			      <input type="password" class="form-control" id="password" name="password" placeholder="請輸入密碼">
+			    </div>
+			</div>
+			<div class="form-group" style="padding-top: 12px">
+			    <label for="password" class="col-sm-3 control-label">綫&emsp;別</label>
+			    <div class="col-sm-8">
+			      <select  class="form-control" id="inputline" name="inputline" ></select>
+			    </div>
+			</div>
+	    <div class="form-group" style="padding-top: 15px;text-align: center;">
+			    <div class="col-sm-12" style="text-align: center;">
+			      <button type="button"style="width:200px;margin-left:0px" onclick="loginbox()" class="btn btn-info">登錄</button>
+			    </div>
+		</div>
+	</div>
+</div>
+</body>
+<style type="text/css">
+    #captchaCode{
+        float: left;
+    }
+    #codePic{
+        float: right;
+        display: inline-block;
+        cursor: pointer;
+    }
+    body{
+        background-image: url(../layuiadmin/layui/images/login_bgx.gif);
+    }
+    .loginbox{
+        border:1px solid #e2e2e2;
+        border-radius:6px;
+        background:#fff;
+	   color:#333;
+	   filter:progid:DXImageTransform.Microsoft.Shadow(color=#909090,direction=120,strength=4);
+	   box-shadow:2px 4px 5px #909090;
+    }
+
+</style>
+<script>
+$(function(){
+	if(window != top){
+		top.location.href="login.html"
+	}
+})
+window.onunload = function(){
+	localStorage.removeItem("jumpUrl");
+	 if(self.screenTop > 9000) {
+	  Out();
+	 }
+	}
+function Out()
+{ 
+	PageMethods.LogOut(GetResult);
+	}
+function GetResult(Result)
+{  
+	$.ajax({
+        url:'/logout',
+        type: 'GET',
+        success: function (data) {
+        	
+        }
+    })  
+	}	
+
+layui.use('form', function(){
+    var form = layui.form;
+    //下拉選擇角色框
+    var option = "<option value='' >請選擇</option>";//初始化option的选项
+    $("#inputline").append(option);
+    $.ajax({
+        url: ctx+'wlBoxInputline/list',
+        type: 'GET',
+        success: function (data) {
+        	for(var i=0;i<data.length;i++){  
+        		 var option = document.createElement("option");
+                 option.setAttribute("value", data[i].inputline);
+                 option.innerText = data[i].inputline;
+                 $("#inputline").append(option)
+           }
+           form.render('select');//重点：重新渲染selec
+        }
+    })      
+});
+
+    function loginbox2() {
+        var username=$(" #username ").val();
+        var  password=$(" #password ").val();
+        var  inputline=$(" #inputline ").val();
+        var  data={username:username,password:password,inputline:inputline};
+     	// 定义一个变量  默认为true
+		var flag=true;
+     	if(username==null||username==""){
+     		layer.msg("用戶名不能為空");
+     		flag=false;
+     	}
+     	if(password==null||password==""){
+     		layer.msg("密碼不能為空");
+     		flag=false;
+     	}
+     	if(inputline==null||inputline==""){
+     		layer.msg("線別不能為空");
+     		flag=false;
+     	}
+     	if(flag==true){
+     		$.ajax({
+                type: 'POST',
+                url: ctx+'loginbox',
+                dataType : "json",
+                contentType:'application/json',
+                data:JSON.stringify(data),
+                success: function (data) {
+                	console.log("2");
+                	if(data.code==200){
+                        localStorage.setItem("userid",data.data.id);
+                        localStorage.setItem("inputline",data.data.inputline);
+                        localStorage.setItem("username",data.data.username);
+                		location.href = 'Box/making.html';
+                	}
+                    else{
+                        layer.msg(data.msg);
+                    }
+                }
+            }); 
+     	}
+    }
+    
+</script>
+</html>

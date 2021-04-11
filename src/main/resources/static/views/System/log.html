@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:shiro="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>index</title>
+    <link rel="stylesheet" href="../../layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../layuiadmin/style/bootstrap.min.css" media="all">
+    <script src="../../layuiadmin/jquery/jquery-1.11.3.min.js"></script>
+    <script src="../../layuiadmin/jquery/bootstrap.min.js"></script>
+    <script src="../../layuiadmin/layui/layui.js"></script>
+</head>
+<body>
+    <div class="form-inline">
+        <div class="form-group" style="margin: 25px 25px">
+          <input type="text" class="form-control" id="username" name="username" placeholder="請輸入用戶名">
+        </div>
+        <div class="form-group" >
+            <input type="text" class="form-control" id="name" name="name" placeholder="請輸入用戶姓名">
+        </div>
+        <div class="form-group" style="margin-left: 25px;">
+            <select type="text" class="form-control" id="operatetype" name="operatetype">
+                <option value="">請選擇操作類型</option>
+                <option value="delete">delete</option>
+                <option value="select">select</option>
+                <option value="update">update</option>
+                <option value="insert">insert</option>
+            </select>
+        </div>
+        <button class="btn btn-info"  onclick="search()">搜索</button>
+    </div>
+
+<!-- 表格  -->
+<table id="demo" lay-filter="test"></table>
+</body>
+<script th:inline="none">
+    //初始化下拉框數據
+    layui.use('form', function(){
+        var form = layui.form;
+        form.render('select');//重点：重新渲染selec  
+        
+    });
+
+    //初始化用户数据
+    layui.use('table', function(){
+        var table = layui.table;
+        //第一个实例
+        table.render({
+            elem: '#demo'
+            ,id: 'test'	//表格的索引
+            ,url: ctx+'/sysLog/pageList' //数据接口
+            ,page: true
+            ,height:460
+            ,method: 'get' //默认：get请求
+           	,initSort: {field: 'createtime' ,type: 'desc'}
+            ,cols: [
+                [ //表头
+                {field: 'userid', title: '用戶名'}
+                ,{field: 'name', title: '姓名'}
+                ,{field: 'description', title: '内容'}
+                ,{field: 'operatetype', title: '操作類型', templet : 
+                function(data) {
+                        if (data.operatetype == "insert" ){
+                            return '<span style="color: blue;">'+data.operatetype+'</span>'; 
+                        }
+                        if (data.operatetype == "update" ){
+                            return '<span style="color: green;">'+data.operatetype+'</span>'; 
+                        }
+                        if (data.operatetype == "select" ){
+                            return '<span>'+data.operatetype+'</span>';
+                        }
+                        else{
+                            return '<span style="color: red;">'+data.operatetype+'</span>';
+                        }
+                    }
+                    
+                }
+                ,{field: 'createtime', title: '操作時間'}
+                 ]
+            ]
+        });
+    });
+
+
+    // 查詢信息
+
+    function search(){
+        var userid=$('#username').val();
+        var name=$('#name').val();
+        var operatetype=$('#operatetype').val();
+        //执行渲染
+        layui.table.reload('test',{
+            where: { //设定异步数据接口的额外参数，任意设
+                userid:userid,
+                name:name,
+                operatetype:operatetype
+            },page: {
+                curr: 1 //重新从第 1 页开始
+            }
+        });
+    }
+
+</script>
+</html>

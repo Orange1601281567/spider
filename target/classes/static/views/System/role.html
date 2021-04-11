@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:shiro="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>index</title>
+    <link rel="stylesheet" href="../../layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../layuiadmin/style/admin.css" media="all">
+    <link rel="stylesheet" href="../../layuiadmin/style/bootstrap.min.css" media="all">
+    <script src="../../layuiadmin/jquery/jquery-1.11.3.min.js"></script>
+    <script src="../../layuiadmin/jquery/bootstrap.min.js"></script>
+    <script src="../../layuiadmin/layui/layui.js"></script>
+</head>
+<body>
+    <div class="form-inline" style="padding: 25px 25px">
+        <div class="form-group">
+          <input type="text" class="form-control" id="name" name="name" placeholder="請輸入角色標識">
+        </div>
+        <button class="btn btn-success"  onclick="search()">搜索</button>
+        <button class="btn btn-info"  onclick="addRole()">添加角色</button>
+    </div> 
+
+<!-- <div class="layui-inline" style="margin: 20px">
+    <input class="layui-input" name="name" id="name" placeholder="請輸入角色標識" autocomplete="off">
+</div>
+<button class="layui-btn"  onclick="search()">搜索</button>
+<div class="layui-inline">
+    <a class="layui-btn layui-btn-normal newsAdd_btn" onclick="addRole()">添加角色</a>
+</div> -->
+
+<!-- 表格  -->
+<table id="demo" lay-filter="test"></table>
+</body>
+
+
+<!-- 添加或修改角色信息 -->
+<div class="form-horizontal" id="editmodel" style="display: none; width: 350px;">
+    <div class="form-group" style="display: none;" >
+      <label for="id" class="col-sm-4 control-label">角色id</label>
+      <div class="col-sm-6">
+        <input type="text" class="form-control" id="id" name="id"  placeholder="id">
+      </div>
+    </div>
+    <div class="form-group" style="margin-top: 20px;">
+        <label for="names" class="col-sm-4 control-label">角色標識</label>
+        <div class="col-sm-6">
+          <input type="text"  class="form-control" id="names" name="names" placeholder="請輸入角色標識">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="description" class="col-sm-4 control-label">角色名稱</label>
+        <div class="col-sm-6">
+          <input type="text" class="form-control" id="description" name="description" placeholder="請輸入角色名稱">
+        </div>
+    </div>
+  </div>
+
+
+<!-- 修改角色權限 -->
+<div id="permissionmodel" style="display: none;">
+    <form class="layui-form" lay-filter="test1">
+        <div class="layui-form-item" style="display: none;"  style="margin-top: 20px;">
+            <label class="layui-form-label">roleid</label>
+            <div class="layui-input-block">
+                <input type="text" id="roleid" name="roleid" required  lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">擁有權限</label>
+            <div class="layui-input-block">
+                <div id="test7" class="demo-tree"></div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<!-- 修改菜單權限 -->
+<div id="menumodel" style="display: none;">
+    <form class="layui-form" lay-filter="test1">
+        <div class="layui-form-item" style="display: none;"  style="margin-top: 20px;">
+            <label class="layui-form-label">roleid</label>
+            <div class="layui-input-block">
+                <input type="text" id="roleid" name="roleid" required  lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">擁有菜單</label>
+            <div class="layui-input-block">
+                <div id="test8" class="demo-tree"></div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    //加載權限信息
+    layui.use('tree', function(){
+        var tree = layui.tree;
+        
+        $.ajax({
+                    type: 'GET',
+                    url: ctx+'sysPermission/tree',
+                    dataType : "json",
+                    contentType:'application/json',
+                    success: function (data) {
+                         //渲染
+                        var inst1 = tree.render({
+                        elem: '#test7'  //绑定元素
+                        ,id:'test7'
+                        ,data: data
+                        ,showCheckbox: true
+                        });
+                    },
+                    error:function(data){
+                    	if(data.status==500){
+                    		layer.msg("您沒有權限");
+                        }
+                    }
+                });
+
+        $.ajax({
+            type: 'GET',
+            url: ctx+'sysMenu/tree',
+            dataType : "json",
+            contentType:'application/json',
+            success: function (data) {
+                    //渲染
+                var inst1 = tree.render({
+                elem: '#test8'  //绑定元素
+                ,id:'test8'
+                ,data: data
+                ,showCheckbox: true
+                });
+            },
+            error:function(data){
+            	if(data.status==500){
+            		layer.msg("您沒有權限");
+                }
+            }
+        });
+    });
+</script>
+
+<script th:inline="none">
+
+    //初始化用户数据
+    layui.use('table', function(){
+        var table = layui.table;
+        //第一个实例
+        table.render({
+            elem: '#demo'
+            ,id: 'test'	//表格的索引
+            ,url: ctx+'sysRole/pageList' //数据接口
+            ,page: true
+            ,height:460
+            ,method: 'get' //默认：get请求
+            ,cols: [
+                [ //表头
+                {field: 'name', title: '角色標識'}
+                ,{field: 'description', title: '角色名稱'}
+                , {fixed: 'right', width:280, align:'center', toolbar: '#barDemo'}
+                 ]
+            ]
+        });
+
+        //每行的删除和修改
+        table.on('tool(test)',function(obj){
+            var data = obj.data;
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的DOM对象
+            if (layEvent === 'del') { //删除
+                layer.confirm('真的删除行么', function(index){
+                    obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                    layer.close(index);
+                    //向服务端发送删除指令
+                    $.ajax({
+                        type: 'DELETE',
+                        url: ctx+'sysRole/'+data.id,
+                        dataType : "json",
+                        contentType:'application/json',
+                        success: function (data) {
+                            if(data.code==200){
+                                layer.alert("操作成功");
+                            }
+                            else{
+                                layer.alert("操作失敗");
+                            }
+                        },
+                        error:function(data){
+                        	if(data.status==500){
+                        		layer.msg("您沒有權限");
+                            }
+                        }
+                    });
+                });
+            }  if (layEvent === 'editper') { //编辑
+                $("#roleid").val(data.id);
+                layui.tree.reload('test7');
+                //設置選中的數據
+                $.ajax({
+                        type: 'get',
+                        url: ctx+'sysPermission/select/'+data.id,
+                        success: function (res2) {
+                            var list=[];
+                            if(res2.length>0){
+                                for(var i=0;i<res2.length;i++){
+                                    list.push(res2[i].id)
+                                }
+                                layui.tree.setChecked('test7', list); //勾选指定节点
+                            }
+                        },
+                        error:function(data){
+                        	if(data.status==500){
+                        		layer.msg("您沒有權限");
+                            }
+                        }
+                    });
+                layer.open({
+                    type: 1,
+                    title:'修改角色權限',
+                    content: $('#permissionmodel'),
+                    btn: ['確定', '关闭'],
+                    yes: function(){updateper(); }
+                });
+            }if (layEvent === 'edits') { //编辑
+                $.ajax({
+                            type: 'get',
+                            url: ctx+'sysRole/'+data.id,
+                            dataType : "json",
+                            contentType:'application/json',
+                            success: function (res2) {
+                                $("#id").val(res2.id);
+                                $("#names").val(res2.name);
+                                $("#description").val(res2.description);    
+                                layer.open({
+                                    type: 1,
+                                    title:'修改角色信息',
+                                    area: ['380px', '230px'],
+                                    content: $('#editmodel'),
+                                    btn: ['確定', '关闭'],
+                                    yes: function(){add(); }
+                                    
+                                });
+                            },
+                            error:function(data){
+                            	if(data.status==500){
+                            		layer.msg("您沒有權限");
+                                }
+                            }
+                        });
+            }if (layEvent === 'editmenu') { //编辑菜單
+                $("#roleid").val(data.id);
+                //重载实例
+                layui.tree.reload('test8');
+                //設置選中的數據
+                $.ajax({
+                        type: 'get',
+                        url: ctx+'sysMenu/selecttree/'+data.id,
+                        success: function (res2) {
+                            var list=[];
+                            if(res2.length>0){
+                                for(var i=0;i<res2.length;i++){
+                                    list.push(res2[i].id)
+                                }
+                                layui.tree.setChecked('test8', list); //勾选指定节点
+                            }
+                        },
+                        error:function(data){
+                        	if(data.status==500){
+                        		layer.msg("您沒有權限");
+                            }
+                        }
+                    });
+                layer.open({
+                    type: 1,
+                    title:'修改菜單權限',
+                    content: $('#menumodel'),
+                    btn: ['確定', '关闭'],
+                    yes: function(){updatemenu(); }
+                });
+            }
+        });
+    });
+
+    //角色查询
+    function search(){
+        var  name=$("#name").val();
+        //执行渲染
+        layui.table.reload('test',{
+            where: { //设定异步数据接口的额外参数，任意设
+                name:name
+            },page: {
+                curr: 1 //重新从第 1 页开始
+            }
+        });
+    }
+
+
+    //添加角色
+    function addRole(){
+        $("#id").val("");
+        $("#names").val("");
+        $("#description").val("");
+        layui.tree.reload('test7');
+        layer.open({
+            type: 1,
+            title:'添加角色信息',
+            content: $('#editmodel'),
+            area: ['380px', '230px'],
+            btn: ['確定', '关闭'],
+            yes: function(){add(); }
+            
+        });
+    }
+
+    //發送添加請求
+    function add(){
+        var  id=$("#id").val();
+        var  name=$("#names").val();
+        var description=$("#description").val();
+        var  data={id:id,description:description,name:name};
+        var flag=true;
+        if(name==null||name==""){
+            flag=false;
+        }
+        if(description==null||description==""){
+            flag=false;
+        }
+        if(flag){
+            $.ajax({
+            type: 'POST',
+            url: ctx+'sysRole/save',
+            dataType : "json",
+            contentType:'application/json',
+            data:JSON.stringify(data),
+            success: function (data) {
+            	if(data.code==200){
+                    layer.msg("操作成功");
+            	}
+                else{
+                    layer.msg("操作失敗");
+                }
+                layer.closeAll();
+                //执行渲染
+                layui.table.reload('test',{
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                });
+            },
+            error:function(data){
+            	if(data.status==500){
+            		layer.msg("您沒有權限");
+                }
+            }
+        });
+        }
+    }
+
+    //提交角色的權限信息
+    function updateper(){
+        var  roleid=$("#roleid").val();
+        var  ids=[];
+        var checkedData = layui.tree.getChecked('test7'); //获取选中节点的数据
+        for(var i=0;i<checkedData.length;i++){
+            for(var j=0;j<checkedData[i].children.length;j++){
+                ids.push(checkedData[i].children[j].id);
+            }
+        }
+        var  data={roleid:roleid,ids:ids};
+            $.ajax({
+            type: 'POST',
+            url: ctx+'sysRolePermission/inserts',
+            dataType : "json",
+            contentType:'application/json',
+            data:JSON.stringify(data),
+            success: function (data) {
+            	if(data){
+                    layer.msg("操作成功");
+            	}
+                else{
+                    layer.msg("操作失敗");
+                }
+                layer.closeAll();
+                //执行渲染
+                layui.table.reload('test',{
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                });
+            },
+            error:function(data){
+            	if(data.status==500){
+            		layer.msg("您沒有權限");
+                }
+            }
+        });
+    }
+
+    //提交角色的菜單信息
+    function updatemenu(){
+        var  roleid=$("#roleid").val();
+        var  ids=[];
+        var checkedData = layui.tree.getChecked('test8'); //获取选中节点的数据
+        for(var i=0;i<checkedData.length;i++){
+            ids.push(checkedData[i].id);
+            for(var j=0;j<checkedData[i].children.length;j++){
+                ids.push(checkedData[i].children[j].id);
+            }
+        }
+        var  data={roleid:roleid,ids:ids};
+            $.ajax({
+            type: 'POST',
+            url: ctx+'sysMenuRole/inserts',
+            dataType : "json",
+            contentType:'application/json',
+            data:JSON.stringify(data),
+            success: function (data) {
+            	if(data){
+                    layer.msg("操作成功");
+            	}
+                else{
+                    layer.msg("操作失敗");
+                }
+                layer.closeAll();
+                //执行渲染
+                layui.table.reload('test',{
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                });
+            },
+            error:function(data){
+            	if(data.status==500){
+            		layer.msg("您沒有權限");
+                }
+            }
+        });
+    }
+
+</script>
+<script th:inline="none" type="text/html" id="barDemo">
+    <a class="layui-btn  layui-btn-xs" lay-event="edits" >编辑</a>
+    <a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="editper" >權限</a>
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="editmenu" >菜單</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" >删除</a>
+</script>
+</html>

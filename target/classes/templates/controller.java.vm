@@ -1,0 +1,130 @@
+package ${package.Controller};
+
+
+import org.springframework.web.bind.annotation.*;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.system.model.ReturnT;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import ${package.Entity}.${entity};
+import javax.annotation.Resource;
+import ${package.Service}.${table.serviceName};
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import io.swagger.annotations.*;
+import com.system.model.Log;
+import com.system.model.OperationType;
+import com.system.model.OperationUnit;
+
+#if(${restControllerStyle})
+import org.springframework.web.bind.annotation.RestController;
+#else
+import org.springframework.stereotype.Controller;
+#end
+#if(${superControllerClassPackage})
+import ${superControllerClassPackage};
+#end
+
+/**
+ * <p>
+ * $!{table.comment} 前端控制器
+ * </p>
+ *
+ * @author ${author}
+ * @since ${date}
+ */
+ 
+@Api(value="${table.controllerName}",tags={"$!{table.comment}"})
+#if(${restControllerStyle})
+@RestController
+#else
+@RestController
+#end
+@RequestMapping("/${table.entityPath}")
+#if(${kotlin})
+class ${table.controllerName}#if(${superControllerClass}) : ${superControllerClass}()#end
+
+#else
+#if(${superControllerClass})
+public class ${table.controllerName} extends ${superControllerClass} {
+#else
+public class ${table.controllerName} {
+#end
+	@Resource
+    public ${table.serviceName} i${entity}Service;
+	
+	@ApiOperation("添加$!{table.comment}")
+    @PostMapping("/insert" )
+    @Log(detail = "添加$!{table.comment}",operationUnit = OperationUnit.SYSTEM,operationType = OperationType.INSERT)
+	public ReturnT<String> insert(@RequestBody ${entity} ${table.entityPath}) {
+		boolean ret= i${entity}Service.save(${table.entityPath});
+		return ret==true?ReturnT.SUCCESS:ReturnT.FAIL;
+	}
+	
+	@ApiOperation("更改$!{table.comment}")
+    @PutMapping("/update" )
+    @Log(detail = "更改$!{table.comment}",operationUnit = OperationUnit.SYSTEM,operationType = OperationType.UPDATE)
+	public ReturnT<String> updateById(@RequestBody ${entity} ${table.entityPath}) {
+		boolean ret= i${entity}Service.updateById(${table.entityPath});
+		return ret==true?ReturnT.SUCCESS:ReturnT.FAIL;
+	}
+	
+	@ApiOperation("更改或添加$!{table.comment}")
+    @PostMapping("/save" )
+    @Log(detail = "更改或添加$!{table.comment}",operationUnit = OperationUnit.SYSTEM,operationType = OperationType.UPDATE)
+	public ReturnT<String> save(@RequestBody ${entity} ${table.entityPath}) {
+		if(${table.entityPath}.getId()!=null){
+			boolean ret= i${entity}Service.updateById(${table.entityPath});
+			return ret==true?ReturnT.SUCCESS:ReturnT.FAIL;
+		}
+		else{
+			boolean ret= i${entity}Service.save(${table.entityPath});
+			return ret==true?ReturnT.SUCCESS:ReturnT.FAIL;
+		}
+	}
+	
+	@ApiOperation("刪除$!{table.comment}")
+    @DeleteMapping("/{id}" )
+    @Log(detail = "刪除$!{table.comment}",operationUnit = OperationUnit.SYSTEM,operationType = OperationType.DELETE)
+	public ReturnT<String> delete(@PathVariable int id) {
+		boolean ret= i${entity}Service.removeById(id);
+		return ret==true?ReturnT.SUCCESS:ReturnT.FAIL;
+	}
+	
+	@ApiOperation("通過id查詢$!{table.comment}")
+    @GetMapping("/{id}" )
+	public ReturnT<${entity}> selectById(@PathVariable int id) {
+		ReturnT<${entity}> ret=new ReturnT<${entity}>(i${entity}Service.getById(id));
+		ret.setCount(1);
+		ret.setCode(200);
+		return ret;
+	}
+	
+	@ApiOperation("查詢$!{table.comment}(不分頁)")
+	@PostMapping("/list" )
+	public ReturnT<List<${entity}>> list(@RequestBody Map<String,Object> columnMap) {
+		ReturnT<List<${entity}>> result=new  ReturnT<List<${entity}>>(null);
+        result.setCount(i${entity}Service.listByMap(columnMap).size());
+        result.setData(i${entity}Service.listByMap(columnMap));
+        return result;
+	}
+	
+	
+	@ApiOperation("查詢$!{table.comment}(分頁)")
+	@GetMapping("/pageList" )
+	public ReturnT<List<${entity}>> pageList(int limit,int page) {
+        QueryWrapper<${entity}> wrapper = new QueryWrapper<${entity}>();
+        Page<${entity}> pages = new Page<${entity}>(page,limit);
+        IPage<${entity}> iPage=i${entity}Service.page(pages, wrapper);
+        ReturnT<List<${entity}>> result=new  ReturnT<List<${entity}>>(null);
+        result.setCode(0);
+        result.setCount((int) iPage.getTotal());
+        result.setData(iPage.getRecords());
+        return result;
+	}
+	
+	
+}
+
+#end

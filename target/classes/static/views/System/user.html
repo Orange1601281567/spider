@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:shiro="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>index</title>
+    <link rel="stylesheet" href="../../layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../layuiadmin/style/bootstrap.min.css" media="all">
+    <script src="../../layuiadmin/jquery/jquery-1.11.3.min.js"></script>
+    <script src="../../layuiadmin/jquery/bootstrap.min.js"></script>
+    <script src="../../layuiadmin/layui/layui.js"></script>
+</head>
+<body>
+    <div class="form-inline">
+        <div class="form-group" style="margin: 25px 25px">
+          <input type="text" class="form-control" id="username" name="username" placeholder="請輸入用戶名">
+        </div>
+        <button class="btn btn-success"  onclick="search()">搜索</button>
+        <button class="btn btn-info"  onclick="addInputline()">添加綫別用户</button>
+        <button class="btn btn-warning"  onclick="addSite()">添加崗點用户</button>
+        <button class="btn btn-primary"  onclick="addCommon()">添加普通用户</button>
+    </div>
+
+
+<!-- 表格  -->
+<table id="demo" lay-filter="test"></table>
+</body>
+
+<!-- 添加綫別用戶信息 -->
+<div class="form-horizontal" id="addUsermodel" style="display: none; width: 350px;">
+    <div class="form-group" style="display: none;" >
+        <label for="addid" class="col-sm-4 control-label">用戶id</label>
+        <div class="col-sm-6">
+          <input type="text" class="form-control" id="addid" name="addid"  placeholder="id">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top: 20px;">
+          <label for="addusername" class="col-sm-4 control-label">用戶名</label>
+          <div class="col-sm-6">
+            <input type="text"  class="form-control" id="addusername" name="addusername" placeholder="請輸入用戶名">
+          </div>
+      </div>
+      <div class="form-group" style="margin-top: 20px;">
+        <label for="addpassword" class="col-sm-4 control-label">密碼</label>
+        <div class="col-sm-6">
+          <input type="text"  class="form-control" id="addpassword" name="addpassword" placeholder="請輸入密碼">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top: 20px;">
+        <label for="addname" class="col-sm-4 control-label">姓名</label>
+        <div class="col-sm-6">
+          <input type="text"  class="form-control" id="addname" name="addname" placeholder="請輸入姓名">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top: 20px;">
+        <label for="adddepartment" class="col-sm-4 control-label">部門</label>
+        <div class="col-sm-6">
+          <input type="text"  class="form-control" id="adddepartment" name="adddepartment" placeholder="請輸入部門">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top: 20px;" id="inputlinecss" style="display: none;">
+        <label for="addinputline" class="col-sm-4 control-label">綫別</label>
+        <div class="col-sm-6">
+          <select type="text" class="form-control" id="addinputline" name="addinputline" placeholder="Email">
+          </select>
+        </div>
+      </div>
+      
+       <div class="form-group" style="margin-top: 20px;" id="sitecss" style="display: none;">
+        <label for="addsite" class="col-sm-4 control-label">崗點</label>
+        <div class="col-sm-6">
+	         <select type="text" class="form-control" id="addsite" name="addsite" placeholder="Email">
+          	    <option value="">請選擇崗點</option>
+		        <option value="2D">2D</option>
+		        <option value="3D">3D</option>
+		        <option value="4D">4D</option>
+	         </select>
+        </div>
+      </div>
+      
+      <div class="form-group" style="margin-top: 20px;" id="sitecss2" style="display: none;">
+        <label for="addip" class="col-sm-4 control-label">IP</label>
+        <div class="col-sm-6">
+          <input type="text"  class="form-control" id="addip" name="addip" placeholder="請輸入ip">
+        </div>
+      </div>
+      
+      <div class="form-group" style="margin-top: 20px;" id="sitecss3" style="display: none;">
+        <label for="addemail" class="col-sm-4 control-label">郵箱</label>
+        <div class="col-sm-6">
+          <input type="text"  class="form-control" id="addemail" name="addemail" placeholder="請輸入郵箱">
+        </div>
+      </div>
+</div>   
+
+<!-- 添加角色信息 -->
+<div class="form-horizontal" id="addRolemodel" style="display: none; width: 350px;">
+    <div class="form-group" style="display: none;" >
+      <label for="userid2" class="col-sm-4 control-label">用戶id</label>
+      <div class="col-sm-6">
+        <input type="text" class="form-control" id="userid2" name="userid2"  placeholder="id">
+      </div>
+    </div>
+    <div class="form-group" style="margin-top: 20px;">
+        <label for="username2" class="col-sm-4 control-label">用戶名</label>
+        <div class="col-sm-6">
+          <input type="text" disabled="disabled" class="form-control" id="username2" name="username2" placeholder="請輸入用戶名">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="rolename" class="col-sm-4 control-label">角色標識</label>
+        <div class="col-sm-6">
+          <select type="text" class="form-control" id="rolename" name="rolename" placeholder="Email">
+          </select>
+        </div>
+    </div>
+  </div>
+
+<script th:inline="none">
+
+    //初始化下拉框數據
+    layui.use('form', function(){
+        var form = layui.form;
+        
+        //下拉選擇角色框
+        var option = "<option value=''>請選擇</option>";//初始化option的选项
+        $("#rolename").append(option);
+        $.ajax({
+            url: ctx+'sysRole/list',
+            type: 'get',
+            success: function (data) {
+                for(var i=0;i<data.length;i++){  
+                    option = document.createElement("option");
+                    option.setAttribute("value", data[i].id);
+                    option.innerText = data[i].description;
+                    $("#rolename").append(option); 
+            }
+            form.render('select');//重点：重新渲染selec
+            }
+        })    
+        
+      //下拉選擇綫別框
+        var option2 = "<option value=''>請選擇</option>";//初始化option的选项
+        $("#addinputline").append(option2);
+        $.ajax({
+            url: ctx+'wlBoxInputline/list',
+            type: 'get',
+            success: function (data) {
+                for(var i=0;i<data.length;i++){  
+                    option2 = document.createElement("option");
+                    option2.setAttribute("value", data[i].inputline);
+                    option2.innerText = data[i].inputline;
+                    $("#addinputline").append(option2); 
+            }
+            form.render('select');//重点：重新渲染selec
+            }
+        })  
+        
+    });
+
+    //初始化用户数据
+    layui.use('table', function(){
+        var table = layui.table;
+        //第一个实例
+        table.render({
+            elem: '#demo'
+            ,id: 'test'	//表格的索引
+            ,url: ctx+'sysUsers/pageList' //数据接口
+            ,page: true
+            ,height:460
+            ,method: 'get' //默认：get请求
+            ,cols: [
+                [ //表头
+                {field: 'username', title: '用户名'}
+                ,{field: 'name', title: '姓名'}
+                ,{field: 'department', title: '部門'}
+                ,{field: 'site', title: '崗點'}
+                ,{field: 'ip', title: '崗點ip'}
+                ,{field: 'email', title: '邮箱'}
+                ,{field: 'inputline', title: '綫別'}
+                ,{fixed: 'right', width:200, align:'center', toolbar: '#barDemo'}
+                 ]
+            ]
+        });
+
+        //每行的删除和修改
+        table.on('tool(test)',function(obj){
+            var data = obj.data;
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的DOM对象
+            if (layEvent === 'del') { //删除
+                layer.confirm('真的删除行么', function(index){
+                    obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                    layer.close(index);
+                    //向服务端发送删除指令
+                    $.ajax({
+                        type: 'DELETE',
+                        url: ctx+'sysUsers/'+data.id,
+                        dataType : "json",
+                        contentType:'application/json',
+                        success: function (data) {
+                        	if(data.code==200){
+                                layer.alert("操作成功");
+                            }
+                            else{
+                                layer.alert("操作失敗");
+                            }
+                        },
+                        error:function(data){
+                        	if(data.status==500){
+                        		layer.msg("您沒有權限");
+                            }
+                        }
+                    });
+                });
+            } else if (layEvent === 'edit') { //编辑
+                $.ajax({
+                            type: 'get',
+                            url: ctx+'sysUsers/'+data.id,
+                            dataType : "json",
+                            contentType:'application/json',
+                            success: function (res2) {
+                                $("#addid").val(res2.id);
+                                $("#addusername").val(res2.username);
+                                $("#addpassword").val(res2.password);
+                                $("#addname").val(res2.name);
+                                $("#adddepartment").val(res2.department);
+                                $("#addinputline").val(res2.inputline);
+                                $("#addsite").val(res2.site);
+                                $("#addip").val(res2.ip);
+                                $("#addemail").val(res2.email);
+                                if(res2.site!=null&&res2.site!=""){
+                                    $("#sitecss").show();
+                                    $("#sitecss2").show();
+                                    $("#sitecss3").show();
+                                    $("#inputlinecss").hide();
+                                    layer.open({
+                                        type: 1,
+                                        title:'修改崗點用户',
+                                        area: ['380px', '490px'],
+                                        content: $('#addUsermodel'),
+                                        btn: ['確定', '关闭'],
+                                        yes: function(){addUserSub(); }
+                                    });
+                                }
+                                if(res2.inputline!=null&&res2.inputline!=""){
+                                	$("#inputlinecss").show();
+                                    $("#sitecss").hide();
+                                    $("#sitecss2").hide();
+                                    $("#sitecss3").hide();
+                                    layer.open({
+                                        type: 1,
+                                        title:'修改綫別用户',
+                                        area: ['380px', '400px'],
+                                        content: $('#addUsermodel'),
+                                        btn: ['確定', '关闭'],
+                                        yes: function(){addUserSub(); }
+                                    });
+                                }
+                                if(res2.inputline==""&&res2.site==""){
+                                	$("#inputlinecss").hide();
+                                    $("#sitecss").hide();
+                                    $("#sitecss2").hide();
+                                    $("#sitecss3").hide();
+                                    layer.open({
+                                        type: 1,
+                                        title:'修改普通用户',
+                                        area: ['380px', '340px'],
+                                        content: $('#addUsermodel'),
+                                        btn: ['確定', '关闭'],
+                                        yes: function(){addUserSub(); }
+                                    });
+                                }
+                                
+                            }
+                        });
+            }
+            else if (layEvent === 'editRole') { //编辑權限
+                $("#username2").val(data.username);
+                $("#userid2").val(data.id);
+                $("#rolename").val("");
+                layui.form.render('select');
+                $.ajax({
+                            type: 'get',
+                            url: ctx+'sysRole/select/'+data.id,
+                            dataType : "json",
+                            async:true,
+                            contentType:'application/json',
+                            success: function (res2) {
+                                if(res2!=""){
+                                    $("#rolename").val(res2.id);
+                                }
+                                layui.form.render('select');
+                            },
+                            error:function(data){
+                            	if(data.status==500){
+                            		layer.msg("您沒有權限");
+                                }
+                            }
+                        });
+                        layer.open({
+                            type: 1,
+                            title:'修改用户角色',
+                            area: ['380px', '230px'],
+                            content:$('#addRolemodel'),
+                            btn: ['確定', '关闭'],
+                            yes: function(){addRole(); }
+                        });
+            }
+        });
+
+    });
+
+    //添加或修改用戶角色
+    function addRole(){
+        var userid= $("#userid2").val();
+        var roleid=$("#rolename").val();
+        var data={userid:userid,roleid:roleid};
+        $.ajax({
+            url: ctx+'sysUserRole/insert',
+            type: 'post',
+            dataType : "json",
+            data:JSON.stringify(data),
+            contentType:'application/json',
+            success: function (data) {
+            	layer.closeAll();
+            },
+            error:function(data){
+            	if(data.status==500){
+            		layer.msg("您沒有權限");
+                }
+            }
+        })   
+    }
+
+    //用户查询
+    function search(){
+        var  username=$("#username").val();
+        //执行渲染
+        layui.table.reload('test',{
+            where: { //设定异步数据接口的额外参数，任意设
+                username:username
+            },page: {
+                curr: 1 //重新从第 1 页开始
+            }
+        });
+    }
+    
+  //添加綫別用户
+    function addInputline(){
+        $("#addid").val("");
+        $("#addusername").val("");
+        $("#addpassword").val("");
+        $("#addname").val("");
+        $("#adddepartment").val("");
+        $("#addinputline").val("");
+        $("#addemail").val("");
+        $("#addsite").val("");
+        $("#addip").val("");
+        $("#inputlinecss").show();
+        $("#sitecss").hide();
+        $("#sitecss2").hide();
+        $("#sitecss3").hide();
+        layer.open({
+            type: 1,
+            title:'添加綫別用户',
+            area: ['380px', '400px'],
+            content: $('#addUsermodel'),
+            btn: ['確定', '关闭'],
+            yes: function(){addUserSub(); }
+        });
+    }
+  
+    //添加崗點用户
+    function addSite(){
+        $("#addid").val("");
+        $("#addusername").val("");
+        $("#addpassword").val("");
+        $("#addname").val("");
+        $("#adddepartment").val("");
+        $("#addemail").val("");
+        $("#addsite").val("");
+        $("#addip").val("");
+        $("#addinputline").val("");
+        $("#sitecss").show();
+        $("#sitecss2").show();
+        $("#sitecss3").show();
+        $("#inputlinecss").hide();
+        layer.open({
+            type: 1,
+            title:'添加崗點用户',
+            area: ['380px', '490px'],
+            content: $('#addUsermodel'),
+            btn: ['確定', '关闭'],
+            yes: function(){addUserSub(); }
+        });
+    }
+    
+  //添加普通用户
+    function addCommon(){
+        $("#addid").val("");
+        $("#addusername").val("");
+        $("#addpassword").val("");
+        $("#addname").val("");
+        $("#adddepartment").val("");
+        $("#addemail").val("");
+        $("#addsite").val("");
+        $("#addip").val("");
+        $("#addinputline").val("");
+        $("#sitecss").hide();
+        $("#sitecss2").hide();
+        $("#sitecss3").hide();
+        $("#inputlinecss").hide();
+        layer.open({
+            type: 1,
+            title:'添加普通用户',
+            area: ['380px', '340px'],
+            content: $('#addUsermodel'),
+            btn: ['確定', '关闭'],
+            yes: function(){addUserSub(); }
+        });
+    }
+
+    //提交添加或修改信息
+    function addUserSub(){
+        var flag=true;
+        var id= $("#addid").val();
+        var username=$("#addusername").val();
+        var password=$("#addpassword").val();
+        var name=$("#addname").val();
+        var department=$("#adddepartment").val();
+        var inputline=$("#addinputline").val();
+        var site=$("#addsite").val();
+        var ip=$("#addip").val();
+        var email=$("#addemail").val();
+        if(username==null||username==""){
+            flag=false;
+            layer.msg("用戶名不能爲空");
+        }
+      //判斷工號格式
+     	if(username.length!=9){
+     		layer.msg("工號格式錯誤");
+     		flag=false;
+     	}
+        if(password==null||password==""){
+            flag=false;
+            layer.msg("密碼不能爲空");
+        }
+        if(name==null||name==""){
+            flag=false;
+            layer.msg("姓名不能爲空");
+        }
+        if(department==null||department==""){
+            flag=false;
+            layer.msg("部門不能爲空");
+        }
+        
+        if($("#inputlinecss").is(':visible')){
+        	if(inputline==null||inputline==""){
+                flag=false;
+                layer.msg("綫別不能爲空");
+            }
+        }
+        
+        if($("#sitecss").is(':visible')){
+            if(site==null||site==""){
+                flag=false;
+                layer.msg("崗點不能爲空");
+            }
+            if(ip==null||ip==""){
+                flag=false;
+                layer.msg("ip不能爲空");
+            }
+            if(email==null||email==""){
+                flag=false;
+                layer.msg("郵箱不能爲空");
+            }
+            var reg = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/;
+         	if(!email.match(reg)) {
+         		layer.msg("郵箱格式錯誤");
+         		flag=false;
+         	}
+        }
+        
+        var data={id:id,username:username,password:password,name:name,department:department,inputline:inputline,site:site,ip:ip,email:email};
+        if(flag){
+            $.ajax({
+            type: 'POST',
+            url: ctx+'sysUsers/save',
+            dataType : "json",
+            contentType:'application/json',
+            data:JSON.stringify(data),
+            success: function (data) {
+            	
+            	if(data.code==200){
+                    layer.msg("操作成功");
+                    layer.closeAll();
+            	}
+                else{
+                    layer.msg(data.msg);
+                }
+                //执行渲染
+                layui.table.reload('test',{
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                });
+            },
+            error:function(data){
+            	if(data.status==500){
+            		layer.msg("您沒有權限");
+                }
+            }
+        });
+        }
+
+    }
+
+</script>
+<script th:inline="none" type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit" >编辑</a>
+	<a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="editRole" >角色</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" >删除</a>
+</script>
+</html>

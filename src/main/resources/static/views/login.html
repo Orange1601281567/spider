@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
+	<meta http-equiv="Pragma" content="no-cache"> 
+	<meta http-equiv="Cache-Control" content="no-cache"> 
+	<meta http-equiv="Expires" content="0"> 
+	<title>物料管控后台管理系统</title>
+	<link href="../layuiadmin/style/login.css" rel="stylesheet" type="text/css" />
+	  <meta name="renderer" content="webkit">
+	  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	  <link rel="stylesheet" href="../layuiadmin/layui/css/layui.css" media="all">
+	  <link rel="stylesheet" href="../layuiadmin/style/admin.css" media="all">
+	  <script src="../layuiadmin/jquery/jquery-1.11.3.min.js"></script>
+	  <script src="../layuiadmin/layui/layui.js"></script>
+</head>
+<body>
+<div class="login_box">
+      <div class="login_l_img"><img src="../layuiadmin/layui/images/login-img.png" /></div>
+      <div class="login">
+          <div class="login_logo"><a href="#"><img src="../layuiadmin/layui/images/login_logo.png" /></a></div>
+          <div class="login_name">
+               <p>后台管理系统</p>
+          </div>
+          <form>
+              <input name="username" id="username" type="text"  placeholder="請輸入用戶名">
+              <input name="password" type="password" id="password" placeholder="請輸入密碼"/>
+              <input value="登录" style="width:100%;" onclick="login()" class="submit">
+          </form>
+      </div>
+</div>
+</body>
+<script>
+$(function(){
+	if(window != top){
+		top.location.href="login.html"
+	}
+})
+	
+    function login() {
+        var username=$(" #username ").val();
+        var  password=$(" #password ").val();
+        var  data={username:username,password:password};
+        $.ajax({
+            type: 'POST',
+            url: ctx+'login',
+            dataType : "json",
+            contentType:'application/json',
+            data:JSON.stringify(data),
+            success: function (data) {
+            	if(data.status==200){
+                    localStorage.setItem("token",data.token);
+            		location.href = 'index.html';
+            	}
+                else{
+                    layer.msg(data.token);
+                }
+            }
+        });
+    }
+    $(()=>{
+        layui.use('layer', function(){ //独立版的layer无需执行这一句
+        var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+        
+        });
+    })
+</script>
+</html>

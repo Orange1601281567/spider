@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.system.mapper.SysLogMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.system.model.SysLog">
+        <id column="id" property="id" />
+        <result column="operation" property="operation" />
+        <result column="way" property="way" />
+        <result column="argument" property="argument" />
+        <result column="userid" property="userid" />
+        <result column="name" property="name" />
+        <result column="description" property="description" />
+        <result column="operatetype" property="operatetype" />
+        <result column="createtime" property="createtime" />
+        <result column="ip" property="ip" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, operation, way, argument, userid, name, description, operatetype, createtime, ip
+    </sql>
+
+</mapper>

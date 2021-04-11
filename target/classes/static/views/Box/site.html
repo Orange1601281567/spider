@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:shiro="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>index</title>
+    <link rel="stylesheet" href="../../layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../layuiadmin/style/bootstrap.min.css" media="all">
+    <script src="../../layuiadmin/jquery/jquery-1.11.3.min.js"></script>
+    <script src="../../layuiadmin/jquery/bootstrap.min.js"></script>
+    <script src="../../layuiadmin/layui/layui.js"></script>
+</head>
+<body>
+    <div class="form-inline">
+        <div class="form-group" style="margin: 25px 25px">
+          <input type="text" class="form-control" id="site" name="site" placeholder="請輸入崗點">
+        </div>
+        <button class="btn btn-info"  onclick="search()">搜索</button>
+        <button class="btn btn-success"  onclick="add()">添加崗點</button>
+    </div>
+
+<!-- 表格  -->
+<table id="demo" lay-filter="test"></table>
+</body>
+
+<!-- 添加崗點信息 -->
+<div class="form-horizontal" id="addmodel" style="display: none; width: 350px;">
+
+    <div class="form-group" style="display: none;" >
+        <label for="addid" class="col-sm-4 control-label">id</label>
+        <div class="col-sm-6">
+          <input type="text" class="form-control" id="addid" name="addid"  placeholder="id">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top: 20px;">
+        <label for="addsite" class="col-sm-4 control-label">崗點</label>
+        <div class="col-sm-6">
+          <input type="text"  class="form-control" id="addsite" name="addsite" placeholder="請輸入崗點">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top: 20px;">
+        <label for="addthere" class="col-sm-4 control-label">去向</label>
+        <div class="col-sm-6">
+          <input type="text"  class="form-control" id="addthere" name="addthere" placeholder="請輸入去向">
+        </div>
+    </div>
+</div>
+
+<script th:inline="none">
+    //初始化下拉框數據
+    layui.use('form', function(){
+        var form = layui.form;
+        form.render('select');//重点：重新渲染selec  
+        
+    });
+
+    //初始化用户数据
+    layui.use('table', function(){
+        var table = layui.table;
+        //第一个实例
+        table.render({
+            elem: '#demo'
+            ,id: 'test'	//表格的索引
+            ,url: ctx+'/wlBoxSitethere/pageList' //数据接口
+            ,page: true
+            ,height:460
+            ,method: 'get' //默认：get请求
+            ,cols: [
+                [ //表头
+                {field: 'site', title: '崗點' }
+                ,{field: 'there', title: '去向'}
+                , {fixed: 'right', width:200, align:'center', toolbar: '#barDemo'}
+                 ]
+            ]
+        });
+
+            //每行的删除和修改
+            table.on('tool(test)',function(obj){
+            var data = obj.data;
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的DOM对象
+            if (layEvent === 'del') { //删除
+                layer.confirm('真的删除行么', function(index){
+                    obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                    layer.close(index);
+                    //向服务端发送删除指令
+                    $.ajax({
+                        type: 'DELETE',
+                        url: ctx+'wlBoxSitethere/'+data.id,
+                        dataType : "json",
+                        contentType:'application/json',
+                        success: function (data) {
+                        	if(data.code==200){
+                                layer.alert("操作成功");
+                            }
+                            else{
+                                layer.alert("操作失敗");
+                            }
+                        }});
+                });
+            } else if (layEvent === 'edit') { //编辑
+                $.ajax({
+                            type: 'get',
+                            url: ctx+'wlBoxSitethere/'+data.id,
+                            dataType : "json",
+                            contentType:'application/json',
+                            success: function (res2) {
+                                $("#addid").val(res2.id);
+                                $("#addthere").val(res2.there);
+                                $("#addsite").val(res2.site);
+                                layer.open({
+                                    type: 1,
+                                    title:'修改崗點',
+                                    area: ['390px', '250px'],
+                                    content: $('#addmodel'),
+                                    btn: ['確定', '关闭'],
+                                    yes: function(){addSub(); }
+                                });
+                            }
+                        });
+            }
+        });
+    });
+
+ //添加崗點
+ function add(){
+        $("#addid").val("");
+        $("#addsite").val("");
+        $("#addthere").val("");
+        layer.open({
+            type: 1,
+            title:'添加崗點',
+            area: ['390px', '250px'],
+            content: $('#addmodel'),
+            btn: ['確定', '关闭'],
+            yes: function(){addSub(); }
+        });
+    }
+
+
+ //提交添加或修改信息
+ function addSub(){
+        var flag=true;
+        var id= $("#addid").val();
+        var there=$("#addthere").val();
+        var site=$("#addsite").val();
+        if(there==null||there==""){
+            flag=false;
+            layer.msg("綫別不能爲空");
+        }
+        if(site==null||site==""){
+            flag=false;
+            layer.msg("崗點不能爲空");
+        }
+        var data={there:there,site:site,id:id};
+        if(flag){
+            $.ajax({
+            type: 'POST',
+            url: ctx+'wlBoxSitethere/save',
+            dataType : "json",
+            contentType:'application/json',
+            data:JSON.stringify(data),
+            success: function (data) {
+            	
+            	if(data.code==200){
+                    layer.msg("操作成功");
+                    layer.closeAll();
+            	}
+                else{
+                    layer.msg(data.msg);
+                }
+                //执行渲染
+                layui.table.reload('test',{
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                });
+            }
+        });
+        }
+
+    }
+
+    // 查詢信息
+
+    function search(){
+        var site=$('#site').val();
+        //执行渲染
+        layui.table.reload('test',{
+            where: { //设定异步数据接口的额外参数，任意设
+            	site:site,
+            },page: {
+                curr: 1 //重新从第 1 页开始
+            }
+        });
+    }
+
+</script>
+<script th:inline="none" type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit" >编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" >删除</a>
+</script>
+</html>
